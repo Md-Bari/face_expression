@@ -25,14 +25,15 @@
                 <div class="brand-icon">🎭</div>
                 <div>
                     <h1 class="brand-title">AuraFace AI</h1>
-                    <div class="brand-subtitle">8-Class Deep Facial Emotion Recognition (150x150 CNN)</div>
+                    <div class="brand-subtitle">5-Class Facial Emotion Recognition</div>
                 </div>
             </div>
 
-            <div class="header-controls">
+            <!-- Desktop Header Controls (Hidden on Mobile) -->
+            <div class="header-controls desktop-only-controls">
                 <div class="model-select-wrapper">
                     <label for="global-model-select">Active Model:</label>
-                    <select id="global-model-select" class="styled-select">
+                    <select id="global-model-select" class="styled-select model-dropdown-sync">
                         {% for m in models %}
                         <option value="{{ m.filename }}" {% if m.is_default %}selected{% endif %}>
                             {{ m.name }} ({{ m.type }})
@@ -46,7 +47,60 @@
                     <span>AI Engine Online</span>
                 </div>
             </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="btn-mobile-menu" class="btn-hamburger" aria-label="Open Settings Menu">
+                <span>☰</span>
+            </button>
         </header>
+
+        <!-- Mobile Settings Drawer / Overlay -->
+        <div id="mobile-menu-drawer" class="mobile-drawer">
+            <div class="drawer-header">
+                <h3>⚙️ Settings & Model</h3>
+                <button id="btn-close-drawer" class="btn-close-drawer">✕</button>
+            </div>
+            <div class="drawer-body">
+                <div class="drawer-item">
+                    <label for="mobile-model-select">Active Model:</label>
+                    <select id="mobile-model-select" class="styled-select model-dropdown-sync" style="width: 100%; margin-top: 6px;">
+                        {% for m in models %}
+                        <option value="{{ m.filename }}" {% if m.is_default %}selected{% endif %}>
+                            {{ m.name }} ({{ m.type }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="drawer-item" style="margin-top: 14px;">
+                    <div class="system-status-pill" style="width: fit-content;">
+                        <div class="pulse-dot"></div>
+                        <span>AI Engine Online</span>
+                    </div>
+                </div>
+
+                <div class="drawer-item" style="margin-top: 16px; border-top: 1px solid var(--border-glass); padding-top: 14px;">
+                    <label class="switch-label" style="justify-content: space-between; width: 100%;">
+                        <span>Auto Real-Time Scan</span>
+                        <div class="switch">
+                            <input type="checkbox" id="mobile-switch-auto-detect" checked>
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="drawer-item" style="margin-top: 12px;">
+                    <label class="switch-label" style="justify-content: space-between; width: 100%;">
+                        <span>Audio Chimes</span>
+                        <div class="switch">
+                            <input type="checkbox" id="mobile-switch-sound">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div id="drawer-backdrop" class="drawer-backdrop"></div>
 
         <!-- Navigation Tabs -->
         <nav class="nav-tabs" role="tablist">

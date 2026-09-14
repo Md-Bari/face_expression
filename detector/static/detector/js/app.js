@@ -117,11 +117,66 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Model Selector Sync ---
-    if (modelSelector) {
-        modelSelector.addEventListener('change', (e) => {
-            state.selectedModel = e.target.value;
-            showToast(`Switched model to ${e.target.selectedOptions[0].text}`, '🧠');
+    // --- Drawer & Mobile Menu Controls ---
+    const btnMobileMenu = document.getElementById('btn-mobile-menu');
+    const btnCloseDrawer = document.getElementById('btn-close-drawer');
+    const mobileDrawer = document.getElementById('mobile-menu-drawer');
+    const drawerBackdrop = document.getElementById('drawer-backdrop');
+
+    function openDrawer() {
+        if (mobileDrawer) mobileDrawer.classList.add('open');
+        if (drawerBackdrop) drawerBackdrop.classList.add('open');
+    }
+
+    function closeDrawer() {
+        if (mobileDrawer) mobileDrawer.classList.remove('open');
+        if (drawerBackdrop) drawerBackdrop.classList.remove('open');
+    }
+
+    if (btnMobileMenu) btnMobileMenu.addEventListener('click', openDrawer);
+    if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
+    if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
+
+    // --- Model Selector Two-Way Sync (Desktop & Mobile Drawer) ---
+    const modelDropdowns = document.querySelectorAll('.model-dropdown-sync');
+    modelDropdowns.forEach(dropdown => {
+        dropdown.addEventListener('change', (e) => {
+            const selectedVal = e.target.value;
+            state.selectedModel = selectedVal;
+
+            // Sync other dropdowns
+            modelDropdowns.forEach(other => {
+                if (other !== e.target) {
+                    other.value = selectedVal;
+                }
+            });
+
+            const modelName = e.target.selectedOptions[0] ? e.target.selectedOptions[0].text : selectedVal;
+            showToast(`Active Model: ${modelName}`, '🧠');
+        });
+    });
+
+    // --- Switch Controls Two-Way Sync ---
+    const mobileAutoDetectSwitch = document.getElementById('mobile-switch-auto-detect');
+    const mobileSoundSwitch = document.getElementById('mobile-switch-sound');
+
+    if (mobileAutoDetectSwitch && autoDetectSwitch) {
+        mobileAutoDetectSwitch.addEventListener('change', (e) => {
+            autoDetectSwitch.checked = e.target.checked;
+            autoDetectSwitch.dispatchEvent(new Event('change'));
+        });
+        autoDetectSwitch.addEventListener('change', (e) => {
+            mobileAutoDetectSwitch.checked = e.target.checked;
+        });
+    }
+
+    if (mobileSoundSwitch && soundSwitch) {
+        mobileSoundSwitch.addEventListener('change', (e) => {
+            soundSwitch.checked = e.target.checked;
+            soundSwitch.dispatchEvent(new Event('change'));
+        });
+        soundSwitch.addEventListener('change', (e) => {
+            mobileSoundSwitch.checked = e.target.checked;
         });
     }
 

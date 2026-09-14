@@ -179,6 +179,121 @@ body {
 
 .styled-select:hover, .styled-select:focus {
   border-color: var(--primary-accent);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+/* Mobile Hamburger Menu Button (Hidden on Desktop) */
+.btn-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-hamburger:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--primary-accent);
+}
+
+/* Mobile Slide-out Drawer */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  max-width: 85vw;
+  height: 100vh;
+  background: #0b1329;
+  border-left: 1px solid var(--border-glass);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px;
+  backdrop-filter: blur(20px);
+}
+
+.mobile-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-glass);
+  margin-bottom: 16px;
+}
+
+.drawer-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btn-close-drawer {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.btn-close-drawer:hover {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fb7185;
+}
+
+.drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.drawer-item label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(3, 7, 18, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+  border-color: var(--primary-accent);
   box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
 }
 
@@ -1005,74 +1120,62 @@ input:checked + .slider:before {
 /* Tablets & Large Phones (< 768px) */
 @media (max-width: 768px) {
   .app-container {
-    padding: 12px 14px 40px 14px;
+    padding: 8px 10px 24px 10px;
   }
 
+  /* Slim Header in Mobile View */
   .app-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    top: 8px;
-    border-radius: var(--radius-md);
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    margin-bottom: 10px !important;
+    top: 6px !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 48px;
   }
 
   .brand {
-    justify-content: space-between;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
   }
 
   .brand-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border-radius: var(--radius-sm);
   }
 
   .brand-title {
-    font-size: 19px;
+    font-size: 16px;
+    font-weight: 700;
   }
 
   .brand-subtitle {
-    font-size: 10.5px;
+    display: none !important;
   }
 
-  .header-controls {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
+  /* Hide Desktop Controls in Top Navbar */
+  .desktop-only-controls {
+    display: none !important;
   }
 
-  .model-select-wrapper {
-    width: 100%;
-    justify-content: space-between;
+  /* Show Hamburger Button */
+  .btn-hamburger {
+    display: flex !important;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
   }
 
-  .model-select-wrapper label {
-    font-size: 12px;
-    white-space: nowrap;
-  }
-
-  .styled-select {
-    flex: 1;
-    width: 100%;
-    max-width: 100%;
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .system-status-pill {
-    align-self: flex-start;
-    padding: 4px 10px;
-    font-size: 11px;
-  }
-
-  /* Nav Tabs: Horizontal Touch Carousel */
+  /* Nav Tabs: Compact Touch Carousel */
   .nav-tabs {
-    margin-bottom: 18px;
+    margin-bottom: 10px;
     padding: 4px;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -1084,33 +1187,61 @@ input:checked + .slider:before {
   }
 
   .tab-btn {
-    padding: 9px 15px;
-    font-size: 12.5px;
+    padding: 6px 12px;
+    font-size: 11.5px;
     flex-shrink: 0;
-    gap: 6px;
+    gap: 5px;
   }
 
-  /* Glass Cards */
+  /* Glass Cards Compact Layout */
   .glass-card {
-    padding: 16px;
+    padding: 10px 12px;
     border-radius: var(--radius-md);
   }
 
   .card-header {
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
 
   .card-title {
-    font-size: 16px;
+    font-size: 13.5px;
   }
 
-  /* Viewport & Camera - Clean face area on mobile */
+  /* Studio Grid: Camera and Diagnostics in Same Mobile Screen */
+  .studio-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* Compact Viewport & Camera */
   .viewport-container {
-    aspect-ratio: 4/3;
+    aspect-ratio: 16/9;
+    max-height: 185px;
+    min-height: 130px;
     border-radius: var(--radius-sm);
   }
 
-  /* Completely remove latency, resolution, and overlays from mobile face area */
+  .camera-placeholder {
+    padding: 12px 10px;
+  }
+
+  .placeholder-icon {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+
+  .camera-placeholder h3 {
+    font-size: 13px;
+  }
+
+  .camera-placeholder p {
+    font-size: 11px;
+    margin-top: 2px;
+    display: none;
+  }
+
+  /* Completely remove latency, resolution, and FPS badges from mobile face area */
   .hud-top-bar {
     display: none !important;
   }
@@ -1121,10 +1252,11 @@ input:checked + .slider:before {
 
   /* Camera Controls */
   .viewport-controls {
-    flex-direction: column;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 14px;
-    margin-top: 14px;
+    gap: 12px;
+    margin-top: 8px;
   }
 
   .icon-action-group {
@@ -1133,24 +1265,27 @@ input:checked + .slider:before {
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 20px !important;
+    gap: 16px !important;
   }
 
-  .control-group:last-child {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-glass);
+  .icon-circle-btn {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    font-size: 18px !important;
+  }
+
+  /* Move secondary switches inside Drawer; hide duplicate bar in camera card on mobile */
+  .viewport-controls > .control-group:last-child {
+    display: none !important;
   }
 
   .btn {
     width: 100%;
-    padding: 11px 14px;
-    font-size: 13px;
-    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    min-height: 40px;
     touch-action: manipulation;
   }
 
@@ -1158,122 +1293,122 @@ input:checked + .slider:before {
     transform: scale(0.97);
   }
 
-  /* Emotion Hero Card */
+  /* Emotion Hero Card: Compact */
   .emotion-hero-card {
-    padding: 14px;
-    gap: 14px;
-    margin-bottom: 18px;
+    padding: 6px 10px;
+    gap: 10px;
+    margin-bottom: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
   }
 
   .emotion-avatar {
-    width: 58px;
-    height: 58px;
-    font-size: 34px;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
     flex-shrink: 0;
+    border-radius: var(--radius-sm);
   }
 
   .emotion-primary-name {
-    font-size: 20px;
+    font-size: 15px;
+    font-weight: 700;
   }
 
   .confidence-badge {
-    font-size: 11px;
-    padding: 3px 8px;
+    font-size: 10.5px;
+    padding: 2px 6px;
   }
 
   .emotion-quote {
-    font-size: 11.5px;
-    line-height: 1.4;
+    display: none !important;
   }
 
-  /* Probability Bars */
+  /* Probability Bars: Compact 5-Class List */
   .prob-list {
-    gap: 10px;
-    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 0;
+  }
+
+  .prob-item {
+    margin-bottom: 0;
   }
 
   .prob-header {
-    font-size: 12px;
+    font-size: 11px;
+    margin-bottom: 2px;
   }
 
   .prob-bar-track {
-    height: 7px;
+    height: 5px;
+    border-radius: 3px;
   }
 
-  /* Mood Insights */
+  /* Hide decorative insight card on mobile so percentages stay on screen without scrolling */
   .insight-card {
-    padding: 12px;
-  }
-
-  .insight-icon {
-    font-size: 18px;
-  }
-
-  .insight-text h4 {
-    font-size: 12px;
-  }
-
-  .insight-text p {
-    font-size: 11px;
+    display: none !important;
   }
 
   /* Stat Counters */
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 18px;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
   .stat-box {
-    padding: 12px 14px;
-    gap: 10px;
+    padding: 10px 12px;
+    gap: 8px;
   }
 
   .stat-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
   }
 
   .stat-value {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .stat-label {
-    font-size: 10.5px;
+    font-size: 10px;
   }
 
   /* Chart */
   .chart-container {
-    height: 260px;
+    height: 240px;
   }
 
   /* Dropzone */
   .dropzone {
-    padding: 32px 16px;
+    padding: 24px 14px;
   }
 
   .dropzone-icon {
-    font-size: 36px;
-    margin-bottom: 10px;
+    font-size: 30px;
+    margin-bottom: 8px;
   }
 
   .dropzone-title {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .dropzone-hint {
-    font-size: 11.5px;
+    font-size: 11px;
   }
 
   /* Models Grid */
   .models-grid {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 12px;
   }
 
   .model-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   /* History Table Mobile Card View */
@@ -1282,42 +1417,47 @@ input:checked + .slider:before {
   }
 
   .history-table th, .history-table td {
-    padding: 10px 10px;
-    font-size: 12px;
+    padding: 8px 8px;
+    font-size: 11.5px;
   }
 
   .table-thumb {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
   }
 }
 
 /* Small SmartPhones (< 480px) */
 @media (max-width: 480px) {
   .app-container {
-    padding: 8px 10px 32px 10px;
+    padding: 6px 8px 20px 8px;
+  }
+
+  .app-header {
+    padding: 6px 10px !important;
   }
 
   .brand-title {
-    font-size: 17px;
+    font-size: 15px;
+  }
+
+  .viewport-container {
+    max-height: 165px;
+    min-height: 120px;
   }
 
   .tab-btn {
-    padding: 8px 12px;
-    font-size: 12px;
+    padding: 5px 10px;
+    font-size: 11px;
   }
 
   .stats-row {
     grid-template-columns: 1fr 1fr;
   }
 
-  .control-group {
-    grid-template-columns: 1fr;
-  }
-
   .emotion-hero-card {
-    flex-direction: row;
-    align-items: center;
+    padding: 5px 8px;
+    gap: 8px;
   }
 }
 
