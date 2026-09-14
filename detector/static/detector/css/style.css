@@ -1060,21 +1060,19 @@ input:checked + .slider:before {
     font-size: 16px;
   }
 
-  /* Viewport & Camera */
+  /* Viewport & Camera - Clean face area on mobile */
   .viewport-container {
     aspect-ratio: 4/3;
     border-radius: var(--radius-sm);
   }
 
+  /* Completely remove latency, resolution, and overlays from mobile face area */
   .hud-top-bar {
-    top: 8px;
-    left: 8px;
-    right: 8px;
+    display: none !important;
   }
 
-  .hud-pill {
-    padding: 3px 8px;
-    font-size: 10px;
+  .hud-pill.fps-counter {
+    display: none !important;
   }
 
   /* Camera Controls */
