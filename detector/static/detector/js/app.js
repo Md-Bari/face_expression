@@ -399,8 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update Radar Chart if active
             if (state.radarChart) {
-                const emotionLabels = ['Angry', 'Contempt', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise'];
-                state.radarChart.data.datasets[0].data = emotionLabels.map(k => probabilities[k] || probabilities[k === 'Surprise' ? 'Suprise' : k] || 0);
+                const emotionLabels = ['Angry', 'Fear', 'Happy', 'Sad', 'Suprise'];
+                state.radarChart.data.datasets[0].data = emotionLabels.map(k => probabilities[k] || probabilities[k === 'Suprise' ? 'Surprise' : 'Suprise'] || 0);
                 state.radarChart.update('none');
             }
         }
@@ -411,14 +411,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = document.getElementById('emotion-radar-chart');
         if (!ctx) return;
 
-        const emotionLabels = ['Angry', 'Contempt', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise'];
+        const emotionLabels = ['Angry', 'Fear', 'Happy', 'Sad', 'Suprise'];
         state.radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: emotionLabels,
                 datasets: [{
                     label: 'Emotion Intensity (%)',
-                    data: [10, 5, 5, 10, 45, 15, 5, 5],
+                    data: [15, 10, 50, 15, 10],
                     backgroundColor: 'rgba(56, 189, 248, 0.25)',
                     borderColor: '#38bdf8',
                     borderWidth: 2,

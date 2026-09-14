@@ -29,23 +29,20 @@ try:
     with open(CLASSES_PATH, 'r') as f:
         CLASS_NAMES = json.load(f)
 except Exception:
-    CLASS_NAMES = ["Angry", "Contempt", "Disgust", "Fear", "Happy", "Neutral", "Sad", "Surprise"]
+    CLASS_NAMES = ["Angry", "Fear", "Happy", "Sad", "Suprise"]
 
-# Color palette for 8 emotions (BGR)
+# Color palette for 5 emotions (BGR)
 EMOTION_COLORS = {
     'Angry': (78, 63, 244),      # Crimson Rose
-    'Contempt': (180, 72, 236),   # Pink Violet
-    'Disgust': (22, 204, 132),    # Lime Green
     'Fear': (246, 92, 139),       # Purple
     'Happy': (129, 185, 16),      # Mint Emerald
-    'Neutral': (184, 163, 148),   # Slate Gray
     'Sad': (212, 182, 6),         # Cyan Blue
-    'Surprise': (11, 158, 245),   # Electric Amber
+    'Suprise': (11, 158, 245),   # Electric Amber
+    'Surprise': (11, 158, 245),  # Electric Amber
 }
 
 EMOTION_EMOJIS = {
-    'Angry': '😠', 'Contempt': '😒', 'Disgust': '🤢', 'Fear': '😨',
-    'Happy': '😃', 'Neutral': '😐', 'Sad': '😢', 'Surprise': '😲'
+    'Angry': '😠', 'Fear': '😨', 'Happy': '😃', 'Sad': '😢', 'Suprise': '😲', 'Surprise': '😲'
 }
 
 
@@ -237,4 +234,20 @@ class FaceEmotionAnalyzer:
         return {
             'faces_found': len(faces),
             'results': results,
-            'anno
+            'annotated_image': annotated
+        }
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Identify faces and classify emotions from an image.")
+    parser.add_argument('image', type=str, help="Path to input image file (JPG, PNG, WebP)")
+    parser.add_argument('--output', '-o', type=str, default='output_detected.jpg',
+                        help="Path to save the annotated output image (default: output_detected.jpg)")
+    args = parser.parse_args()
+
+    analyzer = FaceEmotionAnalyzer()
+    analyzer.analyze_image(args.image, output_path=args.output)
+
+
+if __name__ == '__main__':
+    main()
