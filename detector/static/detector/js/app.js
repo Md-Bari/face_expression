@@ -157,7 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (overlayCanvas) overlayCanvas.style.transform = isFront ? 'scaleX(-1)' : 'none';
 
             state.isStreaming = true;
-            btnToggleCam.innerHTML = `<span>⏹️</span> Stop Camera`;
+            btnToggleCam.innerHTML = `<span class="btn-icon">⏹️</span>`;
+            btnToggleCam.title = "Stop Camera";
+            btnToggleCam.setAttribute('aria-label', 'Stop Camera');
             btnToggleCam.classList.remove('btn-primary');
             btnToggleCam.classList.add('btn-danger');
 
@@ -195,7 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         state.isStreaming = false;
-        btnToggleCam.innerHTML = `<span>▶️</span> Start Camera`;
+        btnToggleCam.innerHTML = `<span class="btn-icon">▶️</span>`;
+        btnToggleCam.title = "Start Camera";
+        btnToggleCam.setAttribute('aria-label', 'Start Camera');
         btnToggleCam.classList.remove('btn-danger');
         btnToggleCam.classList.add('btn-primary');
         if (btnFlipCam) btnFlipCam.style.display = 'none';
@@ -315,11 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             btnCaptureSnap.disabled = true;
-            btnCaptureSnap.innerHTML = `<span>⏳</span> Saving...`;
+            btnCaptureSnap.innerHTML = `<span class="btn-icon">⏳</span>`;
             await detectLiveFrame(true);
             showToast('Snapshot saved to history!', '📸');
             btnCaptureSnap.disabled = false;
-            btnCaptureSnap.innerHTML = `<span>📸</span> Snapshot`;
+            btnCaptureSnap.innerHTML = `<span class="btn-icon">📸</span>`;
         });
     }
 
@@ -393,8 +397,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Emotion UI & Probability Bars Update ---
     function updateEmotionUI(primaryEmotion, confidence, probabilities) {
-        const meta = EMOTION_META[primaryEmotion] || EMOTION_META['Neutral'];
+        const meta = EMOTION_META[primaryEmotion] || EMOTION_META[primaryEmotion === 'Suprise' ? 'Surprise' : 'Neutral'] || EMOTION_META['Neutral'];
 
+        // Update Live Studio Hero
         if (heroAvatar) {
             heroAvatar.textContent = meta.emoji;
             heroAvatar.style.borderColor = meta.color;
@@ -416,13 +421,46 @@ document.addEventListener('DOMContentLoaded', () => {
             moodVibeText.textContent = meta.vibe;
         }
 
-        // Update probability progress bars
+        // Update Upload Tab Hero
+        const uploadAvatar = document.getElementById('upload-hero-avatar');
+        const uploadEmotionName = document.getElementById('upload-hero-emotion-name');
+        const uploadConfidence = document.getElementById('upload-hero-confidence');
+        const uploadQuote = document.getElementById('upload-hero-quote');
+
+        if (uploadAvatar) {
+            uploadAvatar.textContent = meta.emoji;
+            uploadAvatar.style.borderColor = meta.color;
+            uploadAvatar.style.boxShadow = `0 0 25px ${meta.glow}`;
+        }
+        if (uploadEmotionName) {
+            uploadEmotionName.textContent = primaryEmotion;
+            uploadEmotionName.style.color = meta.color;
+        }
+        if (uploadConfidence) {
+            uploadConfidence.textContent = `${confidence}%`;
+            uploadConfidence.style.color = meta.color;
+            uploadConfidence.style.borderColor = meta.color;
+        }
+        if (uploadQuote) {
+            uploadQuote.textContent = meta.quote;
+        }
+
+        // Update probability progress bars in BOTH tabs
         if (probabilities) {
             Object.entries(probabilities).forEach(([emotion, val]) => {
-                const fillBar = document.getElementById(`prob-bar-${emotion}`);
-                const valElem = document.getElementById(`prob-val-${emotion}`);
+                const altKey = (emotion === 'Surprise') ? 'Suprise' : (emotion === 'Suprise') ? 'Surprise' : emotion;
+
+                // Live studio bars
+                const fillBar = document.getElementById(`prob-bar-${emotion}`) || document.getElementById(`prob-bar-${altKey}`);
+                const valElem = document.getElementById(`prob-val-${emotion}`) || document.getElementById(`prob-val-${altKey}`);
                 if (fillBar) fillBar.style.width = `${Math.min(100, Math.max(0, val))}%`;
                 if (valElem) valElem.textContent = `${val}%`;
+
+                // Upload tab bars
+                const upFillBar = document.getElementById(`upload-prob-bar-${emotion}`) || document.getElementById(`upload-prob-bar-${altKey}`);
+                const upValElem = document.getElementById(`upload-prob-val-${emotion}`) || document.getElementById(`upload-prob-val-${altKey}`);
+                if (upFillBar) upFillBar.style.width = `${Math.min(100, Math.max(0, val))}%`;
+                if (upValElem) upValElem.textContent = `${val}%`;
             });
 
             // Update Radar Chart if active
@@ -600,6 +638,38 @@ document.addEventListener('DOMContentLoaded', () => {
             if (uploadPreviewContainer) uploadPreviewContainer.style.display = 'none';
             if (dropzone) dropzone.style.display = 'flex';
             if (multiFaceGallery) multiFaceGallery.style.display = 'none';
+
+            // Reset upload hero and bars
+            const uploadAvatar = document.getElementById('upload-hero-avatar');
+            const uploadEmotionName = document.getElementById('upload-hero-emotion-name');
+            const uploadConfidence = document.getElementById('upload-hero-confidence');
+            const uploadQuote = document.getElementById('upload-hero-quote');
+
+            if (uploadAvatar) {
+                uploadAvatar.textContent = '🎭';
+                uploadAvatar.style.borderColor = 'var(--primary-accent)';
+                uploadAvatar.style.boxShadow = 'none';
+            }
+            if (uploadEmotionName) {
+                uploadEmotionName.textContent = 'Awaiting Image';
+                uploadEmotionName.style.color = 'var(--text-primary)';
+            }
+            if (uploadConfidence) {
+                uploadConfidence.textContent = '0.0%';
+                uploadConfidence.style.color = 'var(--primary-accent)';
+                uploadConfidence.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+            }
+            if (uploadQuote) {
+                uploadQuote.textContent = 'Upload a photo above to run face detection and classify facial expressions.';
+            }
+
+            const classes = ['Angry', 'Fear', 'Happy', 'Sad', 'Suprise', 'Surprise'];
+            classes.forEach(c => {
+                const bar = document.getElementById(`upload-prob-bar-${c}`);
+                const val = document.getElementById(`upload-prob-val-${c}`);
+                if (bar) bar.style.width = '0%';
+                if (val) val.textContent = '0.0%';
+            });
         });
     }
 

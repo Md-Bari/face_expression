@@ -103,15 +103,15 @@
 
                     <!-- Viewport Controls -->
                     <div class="viewport-controls">
-                        <div class="control-group">
-                            <button id="btn-toggle-cam" class="btn btn-primary">
-                                <span>▶️</span> Start Camera
+                        <div class="control-group icon-action-group">
+                            <button id="btn-toggle-cam" class="btn btn-primary icon-circle-btn" title="Start Camera" aria-label="Start Camera">
+                                <span class="btn-icon">▶️</span>
                             </button>
-                            <button id="btn-capture-snap" class="btn btn-secondary">
-                                <span>📸</span> Snapshot
+                            <button id="btn-capture-snap" class="btn btn-secondary icon-circle-btn" title="Take Snapshot" aria-label="Take Snapshot">
+                                <span class="btn-icon">📸</span>
                             </button>
-                            <button id="btn-flip-cam" class="btn btn-secondary btn-icon-only" title="Flip Camera (Front/Rear)" style="display: none;">
-                                <span>🔄</span>
+                            <button id="btn-flip-cam" class="btn btn-secondary icon-circle-btn" title="Flip Camera (Front/Rear)" aria-label="Flip Camera" style="display: none;">
+                                <span class="btn-icon">🔄</span>
                             </button>
                         </div>
 
@@ -236,40 +236,52 @@
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <span class="icon">🔬</span> Multi-Face Inspection
+                            <span class="icon">🔬</span> Emotion Analysis Results
                         </h2>
                     </div>
-                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
-                        The system automatically isolates every detected face, maps landmark features, and evaluates expression probabilities individually.
-                    </p>
 
-                    <div class="insight-card" style="margin-bottom: 20px;">
-                        <div class="insight-item">
-                            <div class="insight-icon">🔍</div>
-                            <div class="insight-text">
-                                <h4>YuNet Deep Learning Detector</h4>
-                                <p>68-landmark aligned face localization with scale invariance and bounding box padding.</p>
+                    <!-- Dynamic Upload Hero Emotion Card -->
+                    <div class="emotion-hero-card">
+                        <div class="emotion-avatar" id="upload-hero-avatar">🎭</div>
+                        <div class="emotion-info">
+                            <div class="emotion-label-row">
+                                <div class="emotion-primary-name" id="upload-hero-emotion-name">Awaiting Image</div>
+                                <div class="confidence-badge" id="upload-hero-confidence">0.0%</div>
+                            </div>
+                            <div class="emotion-quote" id="upload-hero-quote">
+                                Upload a photo above to run face detection and classify facial expressions.
                             </div>
                         </div>
                     </div>
 
+                    <!-- Dynamic 5-Class Probability Progress Bars -->
                     <div class="prob-list">
                         {% for cls in class_names %}
                         <div class="prob-item">
                             <div class="prob-header">
                                 <div class="prob-label color-{{ cls }}">
                                     <span>
-                                        {% if cls == 'Happy' %}😃{% elif cls == 'Suprise' %}😲{% elif cls == 'Sad' %}😢{% elif cls == 'Angry' %}😠{% elif cls == 'Fear' %}😨{% else %}😐{% endif %}
+                                        {% if cls == 'Happy' %}😃{% elif cls == 'Suprise' or cls == 'Surprise' %}😲{% elif cls == 'Sad' %}😢{% elif cls == 'Angry' %}😠{% elif cls == 'Fear' %}😨{% else %}😐{% endif %}
                                     </span>
                                     <span>{{ cls }}</span>
                                 </div>
-                                <span class="color-{{ cls }}">Intensity Breakdown</span>
+                                <span id="upload-prob-val-{{ cls }}" class="color-{{ cls }}">0.0%</span>
                             </div>
                             <div class="prob-bar-track">
-                                <div class="prob-bar-fill bg-{{ cls }}" style="width: 20%;"></div>
+                                <div id="upload-prob-bar-{{ cls }}" class="prob-bar-fill bg-{{ cls }}" style="width: 0%;"></div>
                             </div>
                         </div>
                         {% endfor %}
+                    </div>
+
+                    <div class="insight-card">
+                        <div class="insight-item">
+                            <div class="insight-icon">🔍</div>
+                            <div class="insight-text">
+                                <h4>Deep Neural Detection</h4>
+                                <p id="upload-face-count-text">Select any face thumbnail to inspect individual emotion probabilities.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -475,6 +475,50 @@ body {
   border-radius: var(--radius-md);
 }
 
+/* Side-by-Side Circular Action Icon Buttons */
+.icon-action-group {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 16px !important;
+  width: auto !important;
+}
+
+.icon-circle-btn {
+  width: 52px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  min-width: 52px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px !important;
+  cursor: pointer;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.icon-circle-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(56, 189, 248, 0.4);
+}
+
+.icon-circle-btn:active {
+  transform: scale(0.92);
+}
+
+.icon-circle-btn .btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 /* Toggle Switch */
 .switch-label {
   display: flex;
@@ -1078,19 +1122,22 @@ input:checked + .slider:before {
   /* Camera Controls */
   .viewport-controls {
     flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    align-items: center;
+    gap: 14px;
     margin-top: 14px;
   }
 
-  .control-group {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+  .icon-action-group {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
   }
 
   .control-group:last-child {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     background: rgba(255, 255, 255, 0.03);
