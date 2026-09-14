@@ -128,22 +128,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Webcam Streaming ---
     let streamMedia = null;
     let detectionTimer = null;
+    const btnFlipCam = document.getElementById('btn-flip-cam');
 
     async function startCamera() {
         try {
-            streamMedia = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+            if (streamMedia) {
+                streamMedia.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: state.facingMode || 'user'
+                },
                 audio: false
-            });
+            };
+
+            streamMedia = await navigator.mediaDevices.getUserMedia(constraints);
             videoElem.srcObject = streamMedia;
             videoElem.style.display = 'block';
             if (placeholderElem) placeholderElem.style.display = 'none';
             if (overlayCanvas) overlayCanvas.style.display = 'block';
 
+            // Flip mirror if rear camera
+            const isFront = (state.facingMode || 'user') === 'user';
+            videoElem.style.transform = isFront ? 'scaleX(-1)' : 'none';
+            if (overlayCanvas) overlayCanvas.style.transform = isFront ? 'scaleX(-1)' : 'none';
+
             state.isStreaming = true;
             btnToggleCam.innerHTML = `<span>⏹️</span> Stop Camera`;
             btnToggleCam.classList.remove('btn-primary');
             btnToggleCam.classList.add('btn-danger');
+
+            if (btnFlipCam) btnFlipCam.style.display = 'inline-flex';
 
             videoElem.onloadedmetadata = () => {
                 videoElem.play();
@@ -153,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 startDetectionLoop();
             };
-            showToast('Webcam started successfully!', '📹');
+            showToast('Camera started successfully!', '📹');
         } catch (err) {
             console.error("Camera access error:", err);
             showToast('Unable to access camera: ' + err.message, '⚠️');
@@ -180,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToggleCam.innerHTML = `<span>▶️</span> Start Camera`;
         btnToggleCam.classList.remove('btn-danger');
         btnToggleCam.classList.add('btn-primary');
+        if (btnFlipCam) btnFlipCam.style.display = 'none';
         fpsBadge.textContent = '0 FPS';
     }
 
@@ -187,6 +206,15 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToggleCam.addEventListener('click', () => {
             if (state.isStreaming) stopCamera();
             else startCamera();
+        });
+    }
+
+    if (btnFlipCam) {
+        btnFlipCam.addEventListener('click', async () => {
+            if (!state.isStreaming) return;
+            state.facingMode = (state.facingMode === 'environment') ? 'user' : 'environment';
+            showToast(`Switching to ${state.facingMode === 'user' ? 'Front' : 'Rear'} camera...`, '🔄');
+            await startCamera();
         });
     }
 
