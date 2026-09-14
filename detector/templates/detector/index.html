@@ -1,0 +1,561 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraFace AI — Facial Expression Recognition Studio</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{% static 'detector/css/style.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header & Top Navigation -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">🎭</div>
+                <div>
+                    <h1 class="brand-title">AuraFace AI</h1>
+                    <div class="brand-subtitle">8-Class Deep Facial Emotion Recognition (150x150 CNN)</div>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <div class="model-select-wrapper">
+                    <label for="global-model-select">Active Model:</label>
+                    <select id="global-model-select" class="styled-select">
+                        {% for m in models %}
+                        <option value="{{ m.filename }}" {% if m.is_default %}selected{% endif %}>
+                            {{ m.name }} ({{ m.type }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="system-status-pill">
+                    <div class="pulse-dot"></div>
+                    <span>AI Engine Online</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs" role="tablist">
+            <button class="tab-btn active" data-tab="live-studio">
+                <span>📹</span> Live Camera Studio
+            </button>
+            <button class="tab-btn" data-tab="image-upload">
+                <span>🖼️</span> Photo & File Analysis
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                <span>📊</span> Emotion Radar & Insights
+            </button>
+            <button class="tab-btn" data-tab="model-hub">
+                <span>🧠</span> Model Hub & Diagnostics
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <span>📜</span> Detection History & Export
+            </button>
+        </nav>
+
+        <!-- TAB 1: LIVE CAMERA STUDIO -->
+        <section id="tab-live-studio" class="tab-panel active">
+            <div class="studio-grid">
+                <!-- Left: Video Viewport & Controls -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">🔴</span> Live Vision Stream
+                        </h2>
+                        <div class="hud-pill fps-counter" id="fps-badge">0 FPS</div>
+                    </div>
+
+                    <div class="viewport-container" id="webcam-viewport">
+                        <div class="hud-top-bar">
+                            <div class="hud-pill">
+                                <span>⚡ Latency:</span> <strong id="latency-badge">0 ms</strong>
+                            </div>
+                            <div class="hud-pill">
+                                <span>🎯 Resolution:</span> <strong>640x480</strong>
+                            </div>
+                        </div>
+
+                        <!-- Video Stream -->
+                        <video id="webcam-video" autoplay playsinline muted style="display: none;"></video>
+                        <canvas id="overlay-canvas" class="viewport-overlay-canvas" style="display: none;"></canvas>
+
+                        <!-- Camera Inactive Placeholder -->
+                        <div class="camera-placeholder" id="camera-placeholder">
+                            <div class="placeholder-icon">📷</div>
+                            <h3>Webcam Stream Inactive</h3>
+                            <p style="margin-top: 6px; font-size: 13px;">Click "Start Camera" below to begin real-time face tracking and emotion recognition.</p>
+                        </div>
+                    </div>
+
+                    <!-- Viewport Controls -->
+                    <div class="viewport-controls">
+                        <div class="control-group">
+                            <button id="btn-toggle-cam" class="btn btn-primary">
+                                <span>▶️</span> Start Camera
+                            </button>
+                            <button id="btn-capture-snap" class="btn btn-secondary">
+                                <span>📸</span> Snapshot
+                            </button>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="switch-label">
+                                <div class="switch">
+                                    <input type="checkbox" id="switch-auto-detect" checked>
+                                    <span class="slider"></span>
+                                </div>
+                                <span>Auto Real-Time</span>
+                            </label>
+
+                            <label class="switch-label" style="margin-left: 12px;">
+                                <div class="switch">
+                                    <input type="checkbox" id="switch-sound">
+                                    <span class="slider"></span>
+                                </div>
+                                <span>Audio Chimes</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Active Emotion & Probability Breakdown -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">✨</span> Emotion Diagnostics
+                        </h2>
+                    </div>
+
+                    <!-- Hero Emotion Card -->
+                    <div class="emotion-hero-card">
+                        <div class="emotion-avatar" id="hero-avatar">😃</div>
+                        <div class="emotion-info">
+                            <div class="emotion-label-row">
+                                <div class="emotion-primary-name" id="hero-emotion-name">Happy</div>
+                                <div class="confidence-badge" id="hero-confidence">0.0%</div>
+                            </div>
+                            <div class="emotion-quote" id="hero-quote">
+                                “Keep smiling, because life is a beautiful thing and there’s so much to smile about.”
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5-Class Probability Progress Bars -->
+                    <div class="prob-list">
+                        {% for cls in class_names %}
+                        <div class="prob-item">
+                            <div class="prob-header">
+                                <div class="prob-label color-{{ cls }}">
+                                    <span>
+                                        {% if cls == 'Happy' %}😃{% elif cls == 'Surprise' or cls == 'Suprise' %}😲{% elif cls == 'Sad' %}😢{% elif cls == 'Angry' %}😠{% elif cls == 'Fear' %}😨{% elif cls == 'Contempt' %}😒{% elif cls == 'Disgust' %}🤢{% elif cls == 'Neutral' %}😐{% else %}🎭{% endif %}
+                                    </span>
+                                    <span>{{ cls }}</span>
+                                </div>
+                                <span id="prob-val-{{ cls }}" class="color-{{ cls }}">0.0%</span>
+                            </div>
+                            <div class="prob-bar-track">
+                                <div id="prob-bar-{{ cls }}" class="prob-bar-fill bg-{{ cls }}" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Mood Adaptive Insights -->
+                    <div class="insight-card">
+                        <div class="insight-item">
+                            <div class="insight-icon">🎵</div>
+                            <div class="insight-text">
+                                <h4>Mood Music Recommendation</h4>
+                                <p id="mood-vibe-text">Upbeat Indie Pop / Sunshine Funk</p>
+                            </div>
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-icon">💡</div>
+                            <div class="insight-text">
+                                <h4>Energy & Focus State</h4>
+                                <p>Optimal mood detected for high creativity and collaboration.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: PHOTO & MULTI-FACE ANALYSIS -->
+        <section id="tab-image-upload" class="tab-panel">
+            <div class="studio-grid">
+                <!-- Upload Dropzone -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">📤</span> Image Upload & Inspection
+                        </h2>
+                    </div>
+
+                    <input type="file" id="image-file-input" accept="image/*" style="display: none;">
+                    
+                    <div class="dropzone" id="upload-dropzone">
+                        <div class="dropzone-icon">📁</div>
+                        <div class="dropzone-title">Drag & Drop Image Here or Click to Browse</div>
+                        <div class="dropzone-hint">Supports high-resolution JPG, PNG, and WebP photos</div>
+                    </div>
+
+                    <div id="upload-preview-container" style="display: none;">
+                        <div class="viewport-container" style="aspect-ratio: auto; min-height: 380px;">
+                            <img id="uploaded-preview-img" class="no-mirror" src="" alt="Annotated Preview">
+                        </div>
+                        <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+                            <button id="btn-reset-upload" class="btn btn-secondary">
+                                <span>🔄</span> Upload Another Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Face Gallery -->
+                    <div id="multi-face-gallery" class="face-gallery" style="display: none;"></div>
+                </div>
+
+                <!-- Upload Results Summary -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">🔬</span> Multi-Face Inspection
+                        </h2>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+                        The system automatically isolates every detected face, maps landmark features, and evaluates expression probabilities individually.
+                    </p>
+
+                    <div class="insight-card" style="margin-bottom: 20px;">
+                        <div class="insight-item">
+                            <div class="insight-icon">🔍</div>
+                            <div class="insight-text">
+                                <h4>YuNet Deep Learning Detector</h4>
+                                <p>68-landmark aligned face localization with scale invariance and bounding box padding.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prob-list">
+                        {% for cls in class_names %}
+                        <div class="prob-item">
+                            <div class="prob-header">
+                                <div class="prob-label color-{{ cls }}">
+                                    <span>
+                                        {% if cls == 'Happy' %}😃{% elif cls == 'Suprise' %}😲{% elif cls == 'Sad' %}😢{% elif cls == 'Angry' %}😠{% elif cls == 'Fear' %}😨{% else %}😐{% endif %}
+                                    </span>
+                                    <span>{{ cls }}</span>
+                                </div>
+                                <span class="color-{{ cls }}">Intensity Breakdown</span>
+                            </div>
+                            <div class="prob-bar-track">
+                                <div class="prob-bar-fill bg-{{ cls }}" style="width: 20%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: EMOTION RADAR & ANALYTICS -->
+        <section id="tab-analytics" class="tab-panel">
+            <!-- Stat Counters -->
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">🎯</div>
+                    <div>
+                        <div class="stat-value">{{ total_scans }}</div>
+                        <div class="stat-label">Total Predictions</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">😃</div>
+                    <div>
+                        <div class="stat-value">8 Classes</div>
+                        <div class="stat-label">Emotion Categories</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">⚡</div>
+                    <div>
+                        <div class="stat-value">&lt; 8 ms</div>
+                        <div class="stat-label">ONNX Engine Latency</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">📱</div>
+                    <div>
+                        <div class="stat-value">150x150</div>
+                        <div class="stat-label">Input Resolution</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- 8-Axis Emotion Radar -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">🕸️</span> 8-Axis Emotion Radar Chart
+                        </h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="emotion-radar-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Emotion Category Overview -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">🌈</span> Emotion Spectrum Breakdown
+                        </h2>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-happy);">😃</div>
+                                <div class="insight-text">
+                                    <h4>Happy (Joy, Contentment, Delight)</h4>
+                                    <p>Zygomatic major muscle activation with genuine eye crinkles and smile curvature.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-surprise);">😲</div>
+                                <div class="insight-text">
+                                    <h4>Surprise (Awe, Startle, Shock)</h4>
+                                    <p>Raised eyebrows, widened palpebral fissure, and jaw relaxation.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-neutral);">😐</div>
+                                <div class="insight-text">
+                                    <h4>Neutral (Calm, Composed, Baseline)</h4>
+                                    <p>Resting facial muscle posture with balanced symmetry.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-sad);">😢</div>
+                                <div class="insight-text">
+                                    <h4>Sad (Grief, Sorrow, Melancholy)</h4>
+                                    <p>Depressor anguli oris pull, inner brow rise, and lowered gaze.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-angry);">😠</div>
+                                <div class="insight-text">
+                                    <h4>Angry (Frustration, Rage, Irritation)</h4>
+                                    <p>Corrugator brow knit, lowered inner brows, and tightened lips.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-fear);">😨</div>
+                                <div class="insight-text">
+                                    <h4>Fear (Apprehension, Anxiety, Dread)</h4>
+                                    <p>Tense lower eyelids, elevated upper eyelids, and lateral lip pull.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-disgust);">🤢</div>
+                                <div class="insight-text">
+                                    <h4>Disgust (Aversion, Distaste, Revulsion)</h4>
+                                    <p>Levator labii superioris wrinkle on the nose bridge and curled upper lip.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-item">
+                                <div class="insight-icon" style="color: var(--color-contempt);">😒</div>
+                                <div class="insight-text">
+                                    <h4>Contempt (Disdain, Scorn, Skepticism)</h4>
+                                    <p>Unilateral lip corner tightening and slight asymmetric smirk.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: MODEL HUB & DIAGNOSTICS -->
+        <section id="tab-model-hub" class="tab-panel">
+            <div class="card-header" style="margin-bottom: 24px;">
+                <div>
+                    <h2 class="card-title"><span class="icon">🧠</span> Available Neural Network Models</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                        Trained lightweight MobileNetV3-ECA architectures and quantized edge formats for real-time expression detection.
+                    </p>
+                </div>
+            </div>
+
+            <div class="models-grid">
+                {% for m in models %}
+                <div class="model-card">
+                    {% if m.is_default %}
+                    <div class="model-badge-top">DEFAULT</div>
+                    {% endif %}
+                    <h3 class="model-name">{{ m.name }}</h3>
+                    <div class="model-type">{{ m.type }}</div>
+
+                    <div class="model-meta-list">
+                        <div class="model-meta-item">
+                            <span>File Name:</span>
+                            <span>{{ m.filename }}</span>
+                        </div>
+                        <div class="model-meta-item">
+                            <span>Model Size:</span>
+                            <span>{{ m.size_mb }} MB</span>
+                        </div>
+                        <div class="model-meta-item">
+                            <span>Input Dimensions:</span>
+                            <span>112 x 112 x 3 (RGB)</span>
+                        </div>
+                        <div class="model-meta-item">
+                            <span>Target Classes:</span>
+                            <span>5 Emotions</span>
+                        </div>
+                    </div>
+
+                    <button class="btn {% if m.is_default %}btn-primary{% else %}btn-secondary{% endif %} btn-sm btn-select-model" 
+                            data-filename="{{ m.filename }}" style="width: 100%;">
+                        {% if m.is_default %}Active Model{% else %}Select Model{% endif %}
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- TAB 5: DETECTION HISTORY & EXPORT -->
+        <section id="tab-history" class="tab-panel">
+            <div class="glass-card">
+                <div class="card-header" style="flex-wrap: wrap; gap: 14px;">
+                    <div>
+                        <h2 class="card-title"><span class="icon">📜</span> Emotion Detection History</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                            Complete session audit log of predictions, timestamps, and confidence scores.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <select id="filter-emotion" class="styled-select">
+                            <option value="all">All Emotions</option>
+                            {% for cls in class_names %}
+                            <option value="{{ cls }}">{{ cls }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <select id="filter-source" class="styled-select">
+                            <option value="all">All Sources</option>
+                            <option value="webcam_live">Live Stream</option>
+                            <option value="webcam_snap">Webcam Snapshot</option>
+                            <option value="image_upload">Photo Upload</option>
+                        </select>
+
+                        <button id="btn-export-csv" class="btn btn-secondary btn-sm">
+                            <span>📥</span> Export CSV
+                        </button>
+                        <button id="btn-export-json" class="btn btn-secondary btn-sm">
+                            <span>📄</span> Export JSON
+                        </button>
+                        <button id="btn-clear-history" class="btn btn-danger btn-sm">
+                            <span>🧹</span> Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Face Crop</th>
+                                <th>Timestamp</th>
+                                <th>Source</th>
+                                <th>Primary Emotion</th>
+                                <th>Confidence</th>
+                                <th>Model Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            {% for r in recent_records %}
+                            <tr>
+                                <td>
+                                    {% if r.face_crop_url %}
+                                    <img src="{{ r.face_crop_url }}" class="table-thumb" alt="Face">
+                                    {% else %}
+                                    <div class="table-thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px;">
+                                        {% if r.primary_emotion == 'Happy' %}😃{% elif r.primary_emotion == 'Suprise' %}😲{% elif r.primary_emotion == 'Sad' %}😢{% elif r.primary_emotion == 'Angry' %}😠{% elif r.primary_emotion == 'Fear' %}😨{% else %}😐{% endif %}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ r.created_at }}</strong></td>
+                                <td>
+                                    <span class="badge" style="background: rgba(255,255,255,0.06);">
+                                        {% if r.source == 'webcam_live' %}Live Stream{% elif r.source == 'webcam_snap' %}Webcam Snap{% else %}Photo Upload{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge color-{{ r.primary_emotion }}" style="background: rgba(255,255,255,0.06);">
+                                        {{ r.primary_emotion }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ r.confidence }}%</strong></td>
+                                <td><span style="color: var(--text-muted); font-size: 11px;">{{ r.model_name }}</span></td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm btn-icon-only btn-delete-row" data-id="{{ r.id }}" title="Delete record">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    No detection records recorded yet. Start camera or upload an image to begin logging.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Main Controller Script -->
+    <script src="{% static 'detector/js/app.js' %}"></script>
+</body>
+</html>
