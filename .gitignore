@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Training outputs (re-creatable; can be several GB)
+work/
+artifacts/
+training/*_run.ipynb
+
+# Model weight caches
+*.part

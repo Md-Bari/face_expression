@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
         isStreaming: false,
         autoDetect: true,
         detectIntervalMs: 500,
-        selectedModel: 'face_emotion_model.onnx',
+        // the server marks the default model as selected in the dropdown (v2 model when installed)
+        selectedModel: (document.getElementById('global-model-select') || {}).value || 'face_emotion_model.onnx',
         lastEmotion: null,
         soundEnabled: false,
         fps: 0,

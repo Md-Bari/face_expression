@@ -238,12 +238,43 @@ class FaceEmotionAnalyzer:
         }
 
 
+def run_v2(image_path, output_path):
+    """Use the model trained by training/face_expression_kfold.ipynb (deployment_metadata.json)."""
+    from training.fer_infer_onnx import FaceExpressionRecognizer, read_bgr
+
+    rec = FaceExpressionRecognizer(MODEL_DIR)
+    img = read_bgr(image_path)
+    if img is None:
+        raise ValueError(f"Could not decode image at: {image_path}")
+    results = rec.analyse(img)
+    print(f"\n[OK] Model: {rec.meta.get('onnx_file')} | classes: {rec.classes} | faces: {len(results)}")
+    for i, r in enumerate(results, 1):
+        print(f"\n[*] Face #{i} box={r['box']}: {r['label']} ({r['confidence'] * 100:.1f}%)"
+              + ("  [uncertain]" if r['uncertain'] else ""))
+        for emo, p in sorted(r['probs'].items(), key=lambda kv: -kv[1]):
+            print(f"      - {emo:8s} {p * 100:5.1f}% | {'#' * int(p * 25)}")
+        x1, y1, x2, y2 = r['box']
+        color = EMOTION_COLORS.get(r['label'], EMOTION_COLORS.get(r['label'].capitalize(), (255, 100, 0)))
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+        cv2.putText(img, f"{r['label']} {round(r['confidence'] * 100)}%", (x1, max(y1 - 8, 20)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv2.LINE_AA)
+    if output_path:
+        cv2.imwrite(output_path, img)
+        print(f"\n[OK] Annotated image saved to: {output_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Identify faces and classify emotions from an image.")
     parser.add_argument('image', type=str, help="Path to input image file (JPG, PNG, WebP)")
     parser.add_argument('--output', '-o', type=str, default='output_detected.jpg',
                         help="Path to save the annotated output image (default: output_detected.jpg)")
+    parser.add_argument('--legacy', action='store_true',
+                        help="Use the old 48x48 face_emotion_model.onnx even if a trained v2 model is installed")
     args = parser.parse_args()
+
+    if not args.legacy and os.path.exists(os.path.join(MODEL_DIR, 'deployment_metadata.json')):
+        run_v2(args.image, args.output)
+        return
 
     analyzer = FaceEmotionAnalyzer()
     analyzer.analyze_image(args.image, output_path=args.output)

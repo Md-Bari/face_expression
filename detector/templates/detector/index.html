@@ -511,11 +511,11 @@
                         </div>
                         <div class="model-meta-item">
                             <span>Input Dimensions:</span>
-                            <span>112 x 112 x 3 (RGB)</span>
+                            <span>{{ m.input_shape }}</span>
                         </div>
                         <div class="model-meta-item">
                             <span>Target Classes:</span>
-                            <span>5 Emotions</span>
+                            <span>{{ m.classes|length }} Emotions</span>
                         </div>
                     </div>
 

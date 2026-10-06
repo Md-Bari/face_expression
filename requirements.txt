@@ -1,0 +1,6 @@
+# Web app (python manage.py runserver)
+django>=5.0
+numpy
+opencv-python>=4.8
+onnxruntime          # or onnxruntime-gpu on a CUDA machine
+pillow
