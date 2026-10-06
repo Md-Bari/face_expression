@@ -49,7 +49,7 @@ def api_predict(request):
     Optionally saves the detection to history database.
     """
     try:
-        model_name = request.POST.get('model_name', 'face_emotion_model.onnx')
+        model_name = request.POST.get('model_name') or None   # None = default model (v2 if installed)
         source = request.POST.get('source', 'webcam_live')
         save_record = request.POST.get('save_record', 'false').lower() == 'true'
         draw_annotations = request.POST.get('draw_annotations', 'true').lower() == 'true'
@@ -64,7 +64,7 @@ def api_predict(request):
             try:
                 body = json.loads(request.body)
                 image_data = body.get('image_base64')
-                model_name = body.get('model_name', model_name)
+                model_name = body.get('model_name') or model_name
                 source = body.get('source', source)
                 save_record = bool(body.get('save_record', save_record))
                 draw_annotations = bool(body.get('draw_annotations', draw_annotations))
@@ -87,7 +87,7 @@ def api_predict(request):
             primary_face = result['faces'][0]
             record = EmotionDetectionRecord(
                 source=source,
-                model_name=model_name,
+                model_name=result.get('model_name') or '',
                 primary_emotion=result['primary_emotion'],
                 confidence=result['confidence'] / 100.0,
                 probabilities={k: v / 100.0 for k, v in result['probabilities'].items()},

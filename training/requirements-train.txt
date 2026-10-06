@@ -1,0 +1,15 @@
+# Install the CUDA build of PyTorch FIRST (RTX 50-series needs cu128 or newer):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+# then:
+#   pip install -r training/requirements-train.txt
+timm>=1.0.9
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+opencv-python>=4.8
+pillow
+onnx
+onnxruntime-gpu      # use "onnxruntime" on a machine without an NVIDIA GPU
+jupyter
